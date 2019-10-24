@@ -64,6 +64,9 @@ def extract_wedge(img, binImg, angle):
     # Draw contours for wedge
     cv2.drawContours(mask, [rc], 0, 255, -1)
     mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
+    image = img.copy()
+    cv2.drawContours(image, [rc], 0, 255, 2)
+    show_image(image)
 
     # Extract Wedge(Countour)
     out = np.zeros_like(img)
@@ -102,6 +105,7 @@ def translate_array(data):
 
 def find_max_ins_rect(img):
     """Find the largest inscribed rectangle of a given image map"""
+    print(img)
     data = translate_array(img)
     nrows, ncols = data.shape
     w = np.zeros(dtype=int, shape=data.shape)
@@ -216,14 +220,14 @@ def main():
 
     i = 0
     while (i < 360):
-        # show_image(image_2)
+        show_image(image_2)
         bin_img = binarize_image(image_2)
         wedge, wedge_mask = extract_wedge(image_2, bin_img, angle)
-        # show_image(wedge)
-        # show_image(wedge_mask)
+        show_image(wedge)
+        show_image(wedge_mask)
         rot_rect = extract_rectangle(wedge, wedge_mask)
         extract_regions(rot_rect, rings)
-        # show_image(rot_rect)
+        show_image(rot_rect)
         i = i + angle
 
 
