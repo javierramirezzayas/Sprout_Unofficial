@@ -13,7 +13,7 @@ def load_image(img_path):
 
     # Obtain parameters for scaling
     height, width, depth = img.shape
-    imgScale = 900 / width
+    imgScale = 700 / width
     # imgScale = 200 / width
     newX, newY = img.shape[1] * imgScale, img.shape[0] * imgScale
 
@@ -33,29 +33,31 @@ def binarize_image(img):
     gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     # convert the grayscale image to binary image*
+    #   - src: image source
+    #   - threshold_value: The thresh value with respect to which the thresholding operation is made
+    #   - max_BINARY_value: The value used with the Binary thresholding operations (to set the chosen pixels)
     ret, thresh = cv2.threshold(gray_image, 127, 255, 0)
 
     return thresh
 
-
-def extract_wedge(img, binImg, angle):
-    """Extract a wedge of a given angle from the input image"""
+def get_centroid(binImg):
 
     # calculate moments of binary image
     M = cv2.moments(binImg)
-
-    print(M)
 
     # calculate x,y coordinate of center
     cX = int(M["m10"] / M["m00"])
     cY = int(M["m01"] / M["m00"])
 
+    return cX, cY
+
+def generate_wedge_mask(img, cX, cY, angle):
     # Calculate Angle. Creating a right triangle
     op_side = math.tan(math.radians(angle)) * cX
     c = [cX, cX * 2, cX * 2]
     r = [cY, cY, int(cY - op_side)]
 
-    # Generate array of three points that compose the right traingle
+    # Generate map of three points that compose the right triangle
     rc = np.array((c, r)).T
 
     # Create a mask
@@ -64,20 +66,35 @@ def extract_wedge(img, binImg, angle):
     # Draw contours for wedge
     cv2.drawContours(mask, [rc], 0, 255, -1)
     mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
-    image = img.copy()
-    cv2.drawContours(image, [rc], 0, 255, 2)
-    show_image(image)
 
-    # Extract Wedge(Countour)
-    out = np.zeros_like(img)
-    out[mask == 255] = img[mask == 255]
+    # # For testing
+    # show_image(mask)
+    # image = img.copy()
+    # cv2.drawContours(image, [rc], 0, 255, 2)
+    # show_image(image)
 
-    # Find countour for wedge
-    img_dilation = cv2.dilate(out, None, iterations=6)
+    return mask
+
+def extract_wedge(img, binImg, angle):
+    """Extract a wedge of a given angle from the input image"""
+
+    cX, cY = get_centroid(binImg)
+
+    wedge_mask = generate_wedge_mask(binImg, cX, cY, angle)
+
+    # Extract Wedge from main image
+    wedge = np.zeros_like(img)
+    wedge[wedge_mask == 255] = img[wedge_mask == 255]
+
+    # At this point we have extracted the wedge from the main image.
+    # Now we proceed to isolate the area that contains only the wedge
+
+    # Find contour for wedge
+    img_dilation = cv2.dilate(wedge, None, iterations=6)
     img_erosion = cv2.erode(img_dilation, None, iterations=3)
     edged = cv2.Canny(img_erosion, 150, 500)
     contours, hierarchy = cv2.findContours(edged, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-    # cv2.drawContours(rotated90,contours,-1,(0,255,0),3)
+    # cv2.drawContours(wedge,contours,-1,(0,255,0),3)
 
     areas = [cv2.contourArea(c) for c in contours]
     max_index = np.argmax(areas)
@@ -89,7 +106,7 @@ def extract_wedge(img, binImg, angle):
     x, y, w, h = cv2.boundingRect(cnt)
     # rect = cv2.rectangle(out, (x, y), (x+w,y+h), (0,255,0), 2)
 
-    return out[y:y + h, x:x + w], thresh[y:y + h, x:x + w]
+    return wedge[y:y + h, x:x + w], thresh[y:y + h, x:x + w]
 
 
 def translate_array(data):
@@ -220,14 +237,14 @@ def main():
 
     i = 0
     while (i < 360):
-        show_image(image_2)
+        # show_image(image_2)
         bin_img = binarize_image(image_2)
         wedge, wedge_mask = extract_wedge(image_2, bin_img, angle)
-        show_image(wedge)
-        show_image(wedge_mask)
+        # show_image(wedge)
+        # show_image(wedge_mask)
         rot_rect = extract_rectangle(wedge, wedge_mask)
         extract_regions(rot_rect, rings)
-        show_image(rot_rect)
+        # show_image(rot_rect)
         i = i + angle
 
 
