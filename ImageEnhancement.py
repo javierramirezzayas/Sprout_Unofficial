@@ -34,6 +34,9 @@ def show_image(img):
 
 
 def main():
+
+    # TODO: Receive User Inputs and Images from User Interface
+
     img = load_image('bamboo.jpg')
 
     gamma = adjust_gamma(img, .25)
@@ -51,6 +54,8 @@ def main():
     cv2.imshow('OrigImage', img)
     cv2.imshow('Gamma(0.25)+EqHistImage+Gamma(1.5)', dst)
     cv2.waitKey(0)
+
+    # TODO: Send User Inputs to Image PreProcessing. Signal Image PreProcessing
 
 
 # def main():
