@@ -1,11 +1,12 @@
 import numpy as np
 import cv2
 
-def rotateImage(image, angle):
-  image_center = tuple(np.array(image.shape[1::-1]) / 2)
-  rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
-  result = cv2.warpAffine(image, rot_mat, image.shape[1::-1], flags=cv2.INTER_LINEAR)
-  return rot_mat
+
+def find_inscribed_rect(img, img_mask):
+    channel = img_mask[1:, 1:, 1]
+
+    return None
+
 
 def rotate_bound(image, angle):
     # grab the dimensions of the image and then determine the
@@ -31,22 +32,14 @@ def rotate_bound(image, angle):
     # perform the actual rotation and return the image
     return cv2.warpAffine(image, M, (nW, nH))
 
-img = cv2.imread('control.jpg')
-height, width, depth = img.shape
-imgScale = 700/width
-newX,newY = img.shape[1] * imgScale, img.shape[0] * imgScale
-img = cv2.resize(img, (int(newX), int(newY)))
+
+w_mask = cv2.imread('wedge_mask.jpg')
+w = cv2.imread()
+
 
 cv2.imshow("Orig Img", img)
 cv2.waitKey(0)
 cv2.imshow("Orig Img", rotate_bound(img, 90))
 cv2.waitKey(0)
 
-angle = 0.9
-i=0
-while (i<360):
-    img2 = rotateImage(img, i)
-    i = i + angle
-    if (int(i)==360):
-        cv2.imshow("Rotated Image", img2)
-        cv2.waitKey(0)
+
