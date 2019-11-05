@@ -304,8 +304,6 @@ def region_extraction(bounded_input_image, bounded_binarized_input_image, number
         rot_img = rotate_bound(bin_image, i)
         bin_img = binarize_image(rot_img)
         wedge, wedge_mask = extract_wedge(rot_img, bin_img, wedge_angle)
-        # store_region(wedge, "Wedge"+str(wedge_number)+".png", dir_path)
-        # store_region(wedge_mask, "WedgeMask" + str(wedge_number) + ".png", dir_path)
         # show_image(resize_image(wedge))
         rot_rect = extract_rectangle(wedge, wedge_mask)
         # show_image(rot_rect)

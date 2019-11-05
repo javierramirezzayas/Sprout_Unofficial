@@ -92,5 +92,3 @@ if __name__ == "__main__":
     image = cv2.imread('bamboo.jpg')
 
     Enhanced_Image = image_enhancement(image, ".jpg", "C:\\Users\\Caloj\\Desktop\\Sprout_Images")
-
-    # Call Image Pre-Processing
